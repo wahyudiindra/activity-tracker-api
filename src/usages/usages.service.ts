@@ -28,4 +28,25 @@ export class UsagesService {
             data,
         };
     }
+
+    async getTop3() {
+        const data: Array<{ date: string; totalRequest: number }> = await this.prisma.$queryRawUnsafe(
+            `SELECT
+                c."client_id" AS "clientId",
+                c."name",
+                c."email",
+                COUNT(logs.id)::int AS "totalRequest"
+            FROM "api_logs" logs
+            INNER JOIN "clients" c ON c."client_id" = logs."client_id"
+                WHERE logs.timestamp >= NOW() - INTERVAL '24 hours'
+            GROUP BY c."client_id", c."name", c."email"
+            ORDER BY "totalRequest" DESC
+            LIMIT 3;`,
+        );
+
+        return {
+            totalRequest: data.reduce((sum, r) => sum + Number(r.totalRequest), 0),
+            data,
+        };
+    }
 }

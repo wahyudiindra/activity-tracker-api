@@ -14,4 +14,9 @@ export class UsagesController {
     getDaily() {
         return this.usagesService.getDaily();
     }
+
+    @Get('top')
+    getTop3() {
+        return this.usagesService.getTop3();
+    }
 }
