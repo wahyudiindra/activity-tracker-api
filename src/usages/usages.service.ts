@@ -11,7 +11,7 @@ export class UsagesService {
     ) {}
 
     getDaily() {
-        return this.cacheService.getOrSet(CacheKey.DAILY_USAGE_RESPONSE, 60 * 60, async () => {
+        return this.cacheService.getOrSet(CacheKey.USAGE_DAILY, 60 * 60, async () => {
             const data: Array<{ date: string; totalRequest: number }> = await this.prisma.$queryRawUnsafe(
                 `SELECT 
                 TO_CHAR(dates.date, 'YYYY-MM-DD') AS date,
@@ -37,7 +37,7 @@ export class UsagesService {
     }
 
     getTop3() {
-        return this.cacheService.getOrSet(CacheKey.DAILY_USAGE_RESPONSE, 60 * 60, async () => {
+        return this.cacheService.getOrSet(CacheKey.USAGE_TOP, 60 * 60, async () => {
             const data: Array<{ date: string; totalRequest: number }> = await this.prisma.$queryRawUnsafe(
                 `SELECT
                     c."client_id" AS "clientId",

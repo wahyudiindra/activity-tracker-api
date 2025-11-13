@@ -1,3 +1,4 @@
 export enum CacheKey {
-    DAILY_USAGE_RESPONSE = 'daily-usage-response',
+    USAGE_DAILY = 'usage:daily',
+    USAGE_TOP = 'usage:top',
 }
