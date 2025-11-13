@@ -16,10 +16,8 @@ export class CacheService {
             if (redisValue) return JSON.parse(redisValue) as T;
         }
 
-        if (this.redis.isDown) {
-            const localValue = this.lru.get<T>(key);
-            if (localValue) return localValue;
-        }
+        const localValue = this.lru.get<T>(key);
+        if (localValue) return localValue;
 
         const result = await fetchFromDB();
         if (!this.redis.isDown) {
