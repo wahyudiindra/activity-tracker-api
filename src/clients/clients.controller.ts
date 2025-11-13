@@ -1,7 +1,9 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post, Req } from '@nestjs/common';
 import { ClientsService } from './clients.service';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiHeader, ApiTags } from '@nestjs/swagger';
 import { RegisterClientDto } from './dto/register-client.dto';
+import { CreateLogDto } from './dto/create-log.dto';
+import { HEADER_API_KEY } from 'src/common/constants/default';
 
 @Controller('api')
 @ApiTags('Register & Logging')
@@ -11,5 +13,11 @@ export class ClientsController {
     @Post('register')
     register(@Body() data: RegisterClientDto) {
         return this.clientsService.register(data);
+    }
+
+    @Post('logs')
+    @ApiHeader({ name: HEADER_API_KEY })
+    async createLog(@Req() req, @Body() dto: CreateLogDto) {
+        return this.clientsService.createLog(req.clientId, dto);
     }
 }
