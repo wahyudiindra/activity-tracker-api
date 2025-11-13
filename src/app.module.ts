@@ -7,9 +7,17 @@ import { ClientsModule } from './clients/clients.module';
 import { ApiKeyMiddleware } from './common/middleware/api-key.middleware';
 import { CommonModule } from './common/common.module';
 import { UsagesModule } from './usages/usages.module';
+import { CachesModule } from './caches/caches.module';
 
 @Module({
-    imports: [CommonModule, ConfigModule.forRoot({ isGlobal: true }), AuthModule, ClientsModule, UsagesModule],
+    imports: [
+        CachesModule,
+        CommonModule,
+        ConfigModule.forRoot({ isGlobal: true }),
+        AuthModule,
+        ClientsModule,
+        UsagesModule,
+    ],
     controllers: [AppController],
     providers: [AppService],
 })

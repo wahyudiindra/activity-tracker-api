@@ -1,13 +1,19 @@
 import { Injectable } from '@nestjs/common';
+import { CacheService } from 'src/caches/caches.service';
+import { CacheKey } from 'src/common/constants/cache-key.enum';
 import { PrismaService } from 'src/common/prisma.service';
 
 @Injectable()
 export class UsagesService {
-    constructor(private prisma: PrismaService) {}
+    constructor(
+        private prisma: PrismaService,
+        private cacheService: CacheService,
+    ) {}
 
     async getDaily() {
-        const data: Array<{ date: string; totalRequest: number }> = await this.prisma.$queryRawUnsafe(
-            `SELECT 
+        return this.cacheService.getOrSet(CacheKey.DAILY_USAGE_RESPONSE, 60 * 60, async () => {
+            const data: Array<{ date: string; totalRequest: number }> = await this.prisma.$queryRawUnsafe(
+                `SELECT 
                 TO_CHAR(dates.date, 'YYYY-MM-DD') AS date,
                 COALESCE(COUNT("api_logs".timestamp), 0)::int AS "totalRequest"
             FROM (
@@ -21,12 +27,13 @@ export class UsagesService {
                 ON DATE("api_logs".timestamp) = dates.date
             GROUP BY dates.date
             ORDER BY dates.date DESC;`,
-        );
+            );
 
-        return {
-            totalRequest: data.reduce((sum, r) => sum + Number(r.totalRequest), 0),
-            data,
-        };
+            return {
+                totalRequest: data.reduce((sum, r) => sum + Number(r.totalRequest), 0),
+                data,
+            };
+        });
     }
 
     async getTop3() {
