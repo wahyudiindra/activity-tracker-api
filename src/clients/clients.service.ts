@@ -30,7 +30,7 @@ export class ClientsService {
     async createLog(clientId: any, data: CreateLogDto) {
         const log = await this.prisma.apiLog.create({ data: { clientId, ...data } });
 
-        await this.cacheService.invalidate(CacheKey.USAGE_DAILY);
+        await this.cacheService.invalidate(CacheKey.USAGE_DAILY.split(':')[0]);
         return log;
     }
 }
