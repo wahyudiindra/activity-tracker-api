@@ -65,7 +65,9 @@ export class RedisService implements OnModuleInit {
         try {
             await this.client.set(key, value, 'EX', ttlSeconds);
         } catch (e) {
+            this.logger.error(`safeSet failed: ${e.message}`);
             this.isDown = true;
+            return null;
         }
     }
 }

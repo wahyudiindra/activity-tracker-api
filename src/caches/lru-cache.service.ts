@@ -8,7 +8,7 @@ export class LruCacheService {
     constructor() {
         this.cache = new LRUCache<string, any>({
             max: 200, // max 200 keys
-            ttl: 1000 * 60 * 5, // 5 minutes (configurable)
+            ttl: 1000 * 60 * 60, // 5 minutes (configurable)
         });
     }
 
