@@ -12,22 +12,21 @@ export class UsagesService {
 
     getDaily() {
         return this.cacheService.getOrSet(CacheKey.USAGE_DAILY, 60 * 60, async () => {
-            const data: Array<{ date: string; totalRequest: number }> = await this.prisma.$queryRawUnsafe(
-                `SELECT 
-                TO_CHAR(dates.date, 'YYYY-MM-DD') AS date,
-                COALESCE(COUNT("api_logs".timestamp), 0)::int AS "totalRequest"
-            FROM (
-                SELECT generate_series(
-                    NOW() - INTERVAL '6 days',
-                    NOW(),
-                    INTERVAL '1 day'
-                )::date AS date
-            ) AS dates
-            LEFT JOIN "api_logs"
-                ON DATE("api_logs".timestamp) = dates.date
-            GROUP BY dates.date
-            ORDER BY dates.date DESC;`,
-            );
+            const data: Array<{ date: string; totalRequest: number }> = await this.prisma.$queryRaw`
+                    SELECT 
+                    TO_CHAR(dates.date, 'YYYY-MM-DD') AS date,
+                    COALESCE(COUNT("api_logs".timestamp), 0)::int AS "totalRequest"
+                FROM (
+                    SELECT generate_series(
+                        NOW() - INTERVAL '6 days',
+                        NOW(),
+                        INTERVAL '1 day'
+                    )::date AS date
+                ) AS dates
+                LEFT JOIN "api_logs"
+                    ON DATE("api_logs".timestamp) = dates.date
+                GROUP BY dates.date
+                ORDER BY dates.date DESC;`;
 
             return {
                 totalRequest: data.reduce((sum, r) => sum + Number(r.totalRequest), 0),
@@ -38,8 +37,8 @@ export class UsagesService {
 
     getTop3() {
         return this.cacheService.getOrSet(CacheKey.USAGE_TOP, 60 * 60, async () => {
-            const data: Array<{ date: string; totalRequest: number }> = await this.prisma.$queryRawUnsafe(
-                `SELECT
+            const data: Array<{ date: string; totalRequest: number }> = await this.prisma.$queryRaw`
+                SELECT
                     c."client_id" AS "clientId",
                     c."name",
                     c."email",
@@ -49,8 +48,7 @@ export class UsagesService {
                     WHERE logs.timestamp >= NOW() - INTERVAL '24 hours'
                 GROUP BY c."client_id", c."name", c."email"
                 ORDER BY "totalRequest" DESC
-                LIMIT 3;`,
-            );
+                LIMIT 3;`;
 
             return {
                 totalRequest: data.reduce((sum, r) => sum + Number(r.totalRequest), 0),
