@@ -1,98 +1,125 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Activity Tracker API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+API for tracking client usage (request logs, daily/top stats). Built with NestJS + Prisma + Redis cache (with local LRU fallback).
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+---
 
-## Description
+## Requirements
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- Node.js 20+
+- Yarn
+- PostgreSQL 15+
+- Redis 7+
+- (Optional) Docker + Docker Compose for quick setup
 
-## Project setup
+---
 
-```bash
-$ yarn install
-```
+## Manual Installation
 
-## Compile and run the project
+1. **Clone & install dependencies**
 
-```bash
-# development
-$ yarn run start
+    ```bash
+    git clone <repo>
+    cd activity-tracker-api
+    yarn install
+    ```
 
-# watch mode
-$ yarn run start:dev
+2. **Copy `.env`**
 
-# production mode
-$ yarn run start:prod
-```
+    ```bash
+    cp .env.example .env
+    ```
 
-## Run tests
+    Update:
+    - `DATABASE_URL=postgres://user:pass@host:5432/activity_tracker`
+    - `REDIS_HOST`, `REDIS_PORT`
+    - `JWT_SECRET_KEY`, etc.
 
-```bash
-# unit tests
-$ yarn run test
+3. **Run migrations & seed**
 
-# e2e tests
-$ yarn run test:e2e
+    ```bash
+    yarn db:migrate        # or yarn db:deploy
+    yarn db:seed
+    ```
 
-# test coverage
-$ yarn run test:cov
-```
+4. **Start the app**
+    ```bash
+    yarn dev        # watch mode
+    # or
+    yarn start:prod # after yarn build
+    ```
 
-## Deployment
+---
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+## Docker Compose Installation
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+1. Ensure `.env` exists (Compose can override values as needed).
 
-```bash
-$ yarn install -g @nestjs/mau
-$ mau deploy
-```
+2. Start backing services first (optional but recommended):
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+    ```bash
+    docker compose up -d postgres redis
+    ```
 
-## Resources
+3. Run migration & seed through the `api` service:
 
-Check out a few resources that may come in handy when working with NestJS:
+    ```bash
+    docker compose run --rm api yarn db:migrate
+    docker compose run --rm api yarn db:seed
+    ```
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+4. Bring up the entire stack (API + Postgres + Redis):
 
-## Support
+    ```bash
+    docker compose up
+    ```
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+    API available at `http://localhost:4000`.
 
-## Stay in touch
+---
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+## Key Scripts
+
+| Script            | Description                       |
+| ----------------- | --------------------------------- |
+| `yarn dev`        | NestJS watch mode                 |
+| `yarn start:prod` | Run compiled build                |
+| `yarn db:migrate` | Prisma migrate dev                |
+| `yarn db:deploy`  | Apply migrations on production DB |
+| `yarn db:seed`    | Seed sample data                  |
+| `yarn test`       | Unit tests                        |
+| `yarn test:e2e`   | End-to-end tests                  |
+
+---
+
+## Technical Features
+
+- **Layered caching**: Redis + local LRU fallback, cache versioning & Pub/Sub to invalidate across instances.
+- **Rate limiting**: Redis-based guard per client (1000 req/hour default).
+- **Cache pre-warm**: Usage endpoints invoked automatically at bootstrap.
+- **Prisma**: ORM queries + seeder, with indexes on critical fields (client_id, timestamp).
+
+---
+
+## Main Endpoints
+
+- `POST /api/register` – Register a client (API key generated automatically).
+- `POST /api/logs` – Record client requests (requires API key header, rate limited + batching).
+- `GET /api/usage/daily` – Stats for the last 7 days.
+- `GET /api/usage/top` – Top 3 clients within 24 hours.
+
+(See `src/` for other auth/client endpoints.)
+
+---
+
+## Development
+
+1. Run `yarn dev` for auto-reload.
+2. Use `docker compose up` for a full local stack.
+3. After updating Prisma schema, run `yarn db:migrate` then `yarn db:generate`.
+
+---
 
 ## License
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+Internal project. Add proper license info if needed. (NestJS is MIT).
