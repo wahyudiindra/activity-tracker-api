@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { CacheService } from 'src/caches/caches.service';
 import { CacheKey } from 'src/common/constants/cache-key.enum';
+import { REDIS_DEFAULT_TTL } from 'src/common/constants/default';
 import { PrismaService } from 'src/common/prisma.service';
 
 @Injectable()
@@ -11,7 +12,7 @@ export class UsagesService {
     ) {}
 
     getDaily() {
-        return this.cacheService.getOrSet(CacheKey.USAGE_DAILY, 60 * 60, async () => {
+        return this.cacheService.getOrSet(CacheKey.USAGE_DAILY, REDIS_DEFAULT_TTL, async () => {
             const data: Array<{ date: string; totalRequest: number }> = await this.prisma.$queryRaw`
                     SELECT 
                     TO_CHAR(dates.date, 'YYYY-MM-DD') AS date,
@@ -36,7 +37,7 @@ export class UsagesService {
     }
 
     getTop3() {
-        return this.cacheService.getOrSet(CacheKey.USAGE_TOP, 60 * 60, async () => {
+        return this.cacheService.getOrSet(CacheKey.USAGE_TOP, REDIS_DEFAULT_TTL, async () => {
             const data: Array<{ date: string; totalRequest: number }> = await this.prisma.$queryRaw`
                 SELECT
                     c."client_id" AS "clientId",

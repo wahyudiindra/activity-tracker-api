@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { RedisService } from './redis.service';
 import { LruCacheService } from './lru-cache.service';
 import { CacheKey } from 'src/common/constants/cache-key.enum';
+import { REDIS_DEFAULT_TTL } from 'src/common/constants/default';
 
 @Injectable()
 export class CacheService {
@@ -27,7 +28,10 @@ export class CacheService {
         if (this.redis.isDown) return;
 
         const versionKey = this.getVersionKey(originalKey);
-        await this.redis.client.incr(versionKey);
+        const current = await this.redis.client.incr(versionKey);
+        if (current === 1) {
+            await this.redis.client.expire(versionKey, REDIS_DEFAULT_TTL);
+        }
     }
 
     private async constructVersionedKey(originalKey: string): Promise<string> {
