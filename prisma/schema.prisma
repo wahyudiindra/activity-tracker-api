@@ -44,5 +44,6 @@ model ApiLog {
   @@index([clientId])
   @@index([timestamp])
   @@index([endpoint])
+  @@index([clientId, timestamp])
   @@map("api_logs")
 }
