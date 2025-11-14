@@ -1,0 +1,56 @@
+version: '3.9'
+
+services:
+  api:
+    image: node:20-alpine
+    working_dir: /usr/src/app
+    volumes:
+      - ./:/usr/src/app
+      - api-node-modules:/usr/src/app/node_modules
+    command: >
+      sh -c "yarn install --frozen-lockfile && yarn dev"
+    ports:
+      - "${PORT:-4000}:4000"
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/activity_tracker
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  postgres:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: activity_tracker
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ['redis-server', '--save', '60', '1000']
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis-data:/data
+
+volumes:
+  api-node-modules:
+  postgres-data:
+  redis-data:
